@@ -1,0 +1,41 @@
+#! /usr/bin/env ruby
+
+# Inspired by
+# https://gist.github.com/jeromedalbert/afab24e80102b41d75d5f5538f1459c4
+#
+# This requires the following setup in a relevant Git attributes file:
+#
+#     db/schema.rb merge=railsschema
+#
+# And then the following setup in a relevant Git config file:
+#
+#     [merge "railsschema"]
+#       name = Rails schema.db merge driver
+#       driver = "path/to/this/script" %O %A %B %L %P
+#
+# (For further details, 'git help gitattributes', section 'Defining a custom
+# merge driver')
+
+ancestor, current, other, marker_size, final_path = ARGV
+
+current_name = %x(git name-rev --name-only HEAD).strip
+other_name = %x(git name-rev --name-only ORIG_HEAD).strip
+ancestor_ref = %x(git merge-base HEAD ORIG_HEAD).strip
+ancestor_name = %x(git name-rev --name-only #{ancestor_ref}).strip
+
+MARKER = 'ActiveRecord::Schema\\.define\\(version: ([0-9_]+)\\)\\s+do'
+REGEX = %r(^<{#{marker_size}} .*\n#{MARKER}\n={#{marker_size}}\n#{MARKER}\n>{#{marker_size}} .*)
+
+system 'git', 'merge-file', "--marker-size=#{marker_size}", "-L #{current_name}", "-L #{ancestor_name}", "-L #{other_name}", current, ancestor, other
+source = File.read(current)
+modified = source.sub(REGEX) { "ActiveRecord::Schema.define(version: #{[$1, $2].max}) do" }
+
+if source != modified
+  File.open(current, 'w') { |f| f.write modified }
+end
+
+# Indicate leftover conflicts, if any
+exit 1 if modified.include?('<' * marker_size.to_i)
+
+# Otherwise mark auto-addition and stage it!
+system 'git', 'add', final_path
