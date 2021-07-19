@@ -6,7 +6,7 @@ This is inspired by [this gist](https://gist.github.com/jeromedalbert/afab24e801
 
 ## Installing
 
-1. Grab the [merge driver file](https://github.com/deliciousinsights/rails-schema-merge-driver/blob/main/merge-db-schema-top-versions) and save it someplace.  This is a Ruby script intended to run in POSIX environments that support hashbang syntaxes and the `/usr/bin/env` command.  In particular, this will not work straight from Cmd or Powershell as-is.
+1. Grab the [merge driver file](https://raw.githubusercontent.com/deliciousinsights/rails-schema-merge-driver/main/merge-db-schema-top-versions) and save it someplace.  This is a Ruby script intended to run in POSIX environments that support hashbang syntaxes and the `/usr/bin/env` command.  In particular, this will not work straight from Cmd or Powershell as-is.
 2. Make it executable (e.g. `chmod a+x merge-db-schemas-top-version`).
 3. In a relevant Git attributes file (e.g. `$HOME/.config/git/attributes` or your project's `.git/attributes`), add the following:
 
